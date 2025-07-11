@@ -42,8 +42,8 @@ export default function Page() {
     setEvents(
       (evtData ?? []).map((e) => ({
         ...e,
-        start: new Date(e.start),
-        end: new Date(e.end),
+        start: e.start ? new Date(e.start) : new Date(),
+        end: e.end ? new Date(e.end) : new Date(),
         resourceId: e.resource_id,
       }))
     );
@@ -92,14 +92,14 @@ export default function Page() {
   }
 
   async function handleDropTask(info: { event: { id: string; start: Date | null; end: Date | null; getResources: () => { id: string }[] } }) {
-    const newStart = info.event.start;
-    const newEnd = info.event.end;
+    const newStart = info.event.start ?? new Date();
+    const newEnd = info.event.end ?? new Date(newStart.getTime() + 60 * 60 * 1000);
     const newResourceId = info.event.getResources()?.[0]?.id || 'unassigned';
     await supabase
       .from('events')
       .update({
-        start: newStart?.toISOString(),
-        end: newEnd?.toISOString(),
+        start: newStart.toISOString(),
+        end: newEnd.toISOString(),
         resource_id: newResourceId,
       })
       .eq('id', info.event.id);
