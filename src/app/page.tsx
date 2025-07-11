@@ -1,15 +1,14 @@
-// Starter for HouseOPS: A web-based, installable timeline planner with people and roles
+'use client';
 
 import React from 'react';
 import FullCalendar from '@fullcalendar/react';
 import resourceTimelinePlugin from '@fullcalendar/resource-timeline';
 import interactionPlugin from '@fullcalendar/interaction';
-import '@fullcalendar/core/index.js';
-import '@fullcalendar/resource-timeline/index.js';
-import '@fullcalendar/react/dist/vdom'; // needed for React + FullCalendar
-import '@fullcalendar/resource-timeline/index.css';
+import { createRoot } from 'react-dom/client';
 
-export default function App() {
+import 'fullcalendar/main.css'; // Use your own CSS or copy in styles manually
+
+export default function Page() {
   return (
     <div className="p-4">
       <h1 className="text-2xl font-bold mb-4">HouseOPS – Daily Timeline</h1>
@@ -19,8 +18,8 @@ export default function App() {
         headerToolbar={{ left: 'title', center: '', right: 'prev,today,next' }}
         slotMinTime="04:00:00"
         slotMaxTime="24:00:00"
-        aspectRatio={1.5}
         resourceAreaWidth="20%"
+        aspectRatio={1.5}
         resources={[
           { id: 'jeff', title: 'Jeff' },
           { id: 'jacob', title: 'Jacob' },
