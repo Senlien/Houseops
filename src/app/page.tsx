@@ -35,11 +35,12 @@ export default function Page() {
       const name = prompt('Enter your name to register:');
       if (name) registerUser(name);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function registerUser(name: string) {
     const role = name.toLowerCase() === 'planner' ? 'planner' : 'user';
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from('users')
       .insert([{ name, role }])
       .select()
@@ -61,7 +62,13 @@ export default function Page() {
       .from('tasks')
       .select('*, users(name)')
       .eq('assigned_to', userId);
-    const enriched = (data ?? []).map((t: any) => ({
+    const enriched = (data ?? []).map((t: {
+      id: string;
+      title: string;
+      status: 'todo' | 'in_progress' | 'done';
+      assigned_to: string;
+      users?: { name?: string };
+    }) => ({
       ...t,
       user_name: t.users?.name ?? 'Unknown',
     }));
@@ -73,8 +80,7 @@ export default function Page() {
     const { data: users } = await supabase.from('users').select('id, name');
     if (!users || users.length === 0) return alert('No users to assign to.');
     const nameList = users.map((u) => u.name).join(', ');
-    const assigneeName = prompt(`Assign to user name:
-${nameList}`);
+    const assigneeName = prompt(`Assign to user name:\n${nameList}`);
     const assignee = users.find((u) => u.name === assigneeName);
     if (!title || !assignee) return;
     const { data } = await supabase
