@@ -80,7 +80,7 @@ export default function Page() {
     }
   }
 
-  async function handleRenameTask(info: { event: any }) {
+  async function handleRenameTask(info: { event: { id: string; title: string } }) {
     const title = prompt('Rename task:', info.event.title);
     if (title) {
       await supabase.from('events').update({ title }).eq('id', info.event.id);
@@ -91,7 +91,7 @@ export default function Page() {
     }
   }
 
-  async function handleDropTask(info) {
+  async function handleDropTask(info: { event: any }) {
     const newStart = info.event.start;
     const newEnd = info.event.end;
     const newResourceId = info.event.getResources()?.[0]?.id || 'unassigned';
