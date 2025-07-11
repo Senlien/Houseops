@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import resourceTimelinePlugin from '@fullcalendar/resource-timeline';
 import interactionPlugin from '@fullcalendar/interaction';
-import '/calendar.css';
 
 export default function Page() {
   const [resources, setResources] = useState([
