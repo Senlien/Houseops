@@ -91,7 +91,7 @@ export default function Page() {
     }
   }
 
-  async function handleDropTask(info: { event: { id: string; start: Date; end: Date; getResources: () => { id: string }[] } }) {
+  async function handleDropTask(info: { event: { id: string; start: Date | null; end: Date | null; getResources: () => { id: string }[] } }) {
     const newStart = info.event.start;
     const newEnd = info.event.end;
     const newResourceId = info.event.getResources()?.[0]?.id || 'unassigned';
