@@ -98,8 +98,8 @@ export default function Page() {
     await supabase
       .from('events')
       .update({
-        start: newStart.toISOString(),
-        end: newEnd.toISOString(),
+        start: newStart?.toISOString(),
+        end: newEnd?.toISOString(),
         resource_id: newResourceId,
       })
       .eq('id', info.event.id);
