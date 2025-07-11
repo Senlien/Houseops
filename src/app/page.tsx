@@ -6,7 +6,6 @@ import resourceTimelinePlugin from '@fullcalendar/resource-timeline';
 import interactionPlugin from '@fullcalendar/interaction';
 import { createRoot } from 'react-dom/client';
 
-import 'fullcalendar/main.css'; // Use your own CSS or copy in styles manually
 
 export default function Page() {
   return (
