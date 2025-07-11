@@ -1,4 +1,4 @@
-'use client';
+>'use client';
 
 import React, { useEffect, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
@@ -30,13 +30,19 @@ export default function Page() {
       setUserId(storedId);
       setUserName(storedName);
       setIsPlanner(storedRole === 'planner');
-      fetchTasks();
     } else {
       const name = prompt('Enter your name to register:');
       if (name) registerUser(name);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (userId) {
+      fetchTasks();
+      const interval = setInterval(fetchTasks, 5000); // Auto-sync every 5 seconds
+      return () => clearInterval(interval);
+    }
+  }, [userId]);
 
   async function registerUser(name: string) {
     const role = name.toLowerCase() === 'planner' ? 'planner' : 'user';
@@ -53,7 +59,6 @@ export default function Page() {
       setUserId(data.id);
       setUserName(name);
       setIsPlanner(role === 'planner');
-      fetchTasks();
     }
   }
 
