@@ -80,7 +80,7 @@ export default function Page() {
     }
   }
 
-  async function handleRenameTask(info) {
+  async function handleRenameTask(info: { event: any }) {
     const title = prompt('Rename task:', info.event.title);
     if (title) {
       await supabase.from('events').update({ title }).eq('id', info.event.id);
