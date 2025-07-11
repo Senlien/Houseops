@@ -4,7 +4,6 @@ import React from 'react';
 import FullCalendar from '@fullcalendar/react';
 import resourceTimelinePlugin from '@fullcalendar/resource-timeline';
 import interactionPlugin from '@fullcalendar/interaction';
-import { createRoot } from 'react-dom/client';
 
 
 export default function Page() {
