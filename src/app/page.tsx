@@ -1,63 +1,97 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import resourceTimelinePlugin from '@fullcalendar/resource-timeline';
 import interactionPlugin from '@fullcalendar/interaction';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  'https://kzmlgmxscnlhiltlsgks.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6bWxnbXhzY25saGlsdGxzZ2tzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyMjcwNDgsImV4cCI6MjA2NzgwMzA0OH0.24vdmnIcli9FUQ8B9g6_XSnsaLcKIsbyZEeraF2E58c'
+);
 
 export default function Page() {
-  const [resources, setResources] = useState([
-    { id: 'unassigned', title: '🕓 Unassigned Tasks' },
-    { id: 'jeff', title: 'Jeff' },
-    { id: 'jacob', title: 'Jacob' },
-    { id: 'mum', title: 'Mum' },
-  ]);
+  const [resources, setResources] = useState([]);
+  const [events, setEvents] = useState([]);
 
-  const [events, setEvents] = useState([
-    {
-      id: '1',
-      title: 'INT RAMP – Bin Night 🗑️',
-      start: new Date().setHours(5, 0),
-      end: new Date().setHours(6, 0),
-      resourceId: 'jeff',
-      color: '#FFC107',
-    },
-    {
-      id: '2',
-      title: 'LEAD LOAD – School Dropoff 🚗',
-      start: new Date().setHours(7, 30),
-      end: new Date().setHours(8, 30),
-      resourceId: 'mum',
-      color: '#F44336',
-    },
-    {
-      id: '3',
-      title: 'INT DRV – Dishes 🍽️',
-      start: new Date().setHours(18, 0),
-      end: new Date().setHours(18, 30),
-      resourceId: 'unassigned',
-      color: '#2196F3',
-    },
-  ]);
+  useEffect(() => {
+    fetchInitialData();
+  }, []);
 
-  function handleAddTask() {
+  async function fetchInitialData() {
+    const { data: resData } = await supabase.from('resources').select('*');
+    const { data: evtData } = await supabase.from('events').select('*');
+
+    setResources(resData ?? []);
+    setEvents(
+      (evtData ?? []).map((e) => ({
+        ...e,
+        start: new Date(e.start),
+        end: new Date(e.end),
+        resourceId: e.resource_id,
+      }))
+    );
+  }
+
+  async function handleAddTask() {
     const newTask = {
       id: String(Date.now()),
       title: 'New Shift ✏️',
-      start: new Date().setHours(9, 0),
-      end: new Date().setHours(10, 0),
-      resourceId: 'unassigned',
+      start: new Date().toISOString(),
+      end: new Date(new Date().getTime() + 60 * 60 * 1000).toISOString(),
+      resource_id: 'unassigned',
       color: '#9E9E9E',
     };
-    setEvents((prev) => [...prev, newTask]);
+    await supabase.from('events').insert([newTask]);
+    setEvents((prev) => [...prev, { ...newTask, start: new Date(newTask.start), end: new Date(newTask.end), resourceId: newTask.resource_id }]);
   }
 
-  function handleAddPerson() {
+  async function handleAddPerson() {
     const name = prompt('New person name:');
     if (name) {
       const id = name.toLowerCase().replace(/\s+/g, '-');
-      setResources([...resources, { id, title: name }]);
+      const newRes = { id, title: name };
+      await supabase.from('resources').insert([newRes]);
+      setResources((prev) => [...prev, newRes]);
     }
+  }
+
+  async function handleRenameTask(info) {
+    const title = prompt('Rename task:', info.event.title);
+    if (title) {
+      await supabase.from('events').update({ title }).eq('id', info.event.id);
+      const updated = events.map((e) =>
+        e.id === info.event.id ? { ...e, title } : e
+      );
+      setEvents(updated);
+    }
+  }
+
+  async function handleDropTask(info) {
+    const newStart = info.event.start;
+    const newEnd = info.event.end;
+    const newResourceId = info.event.getResources()?.[0]?.id || 'unassigned';
+    await supabase
+      .from('events')
+      .update({
+        start: newStart.toISOString(),
+        end: newEnd.toISOString(),
+        resource_id: newResourceId,
+      })
+      .eq('id', info.event.id);
+
+    const updated = events.map((ev) =>
+      ev.id === info.event.id
+        ? {
+            ...ev,
+            start: newStart,
+            end: newEnd,
+            resourceId: newResourceId,
+          }
+        : ev
+    );
+    setEvents(updated);
   }
 
   return (
@@ -89,28 +123,8 @@ export default function Page() {
         events={events}
         editable={true}
         selectable={true}
-        eventDrop={(info) => {
-          const updated = events.map((ev) =>
-            ev.id === info.event.id
-              ? {
-                  ...ev,
-                  start: info.event.start,
-                  end: info.event.end,
-                  resourceId: info.event.getResources()?.[0]?.id || 'unassigned',
-                }
-              : ev
-          );
-          setEvents(updated);
-        }}
-        eventClick={(info) => {
-          const title = prompt('Rename task:', info.event.title);
-          if (title) {
-            const updated = events.map((e) =>
-              e.id === info.event.id ? { ...e, title } : e
-            );
-            setEvents(updated);
-          }
-        }}
+        eventDrop={handleDropTask}
+        eventClick={handleRenameTask}
       />
     </div>
   );
