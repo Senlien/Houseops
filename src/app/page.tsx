@@ -11,9 +11,24 @@ const supabase = createClient(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6bWxnbXhzY25saGlsdGxzZ2tzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyMjcwNDgsImV4cCI6MjA2NzgwMzA0OH0.24vdmnIcli9FUQ8B9g6_XSnsaLcKIsbyZEeraF2E58c'
 );
 
+type Resource = {
+  id: string;
+  title: string;
+};
+
+type Event = {
+  id: string;
+  title: string;
+  start: Date;
+  end: Date;
+  resource_id: string;
+  resourceId?: string;
+  color?: string;
+};
+
 export default function Page() {
-  const [resources, setResources] = useState([]);
-  const [events, setEvents] = useState([]);
+  const [resources, setResources] = useState<Resource[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
 
   useEffect(() => {
     fetchInitialData();
@@ -44,7 +59,15 @@ export default function Page() {
       color: '#9E9E9E',
     };
     await supabase.from('events').insert([newTask]);
-    setEvents((prev) => [...prev, { ...newTask, start: new Date(newTask.start), end: new Date(newTask.end), resourceId: newTask.resource_id }]);
+    setEvents((prev) => [
+      ...prev,
+      {
+        ...newTask,
+        start: new Date(newTask.start),
+        end: new Date(newTask.end),
+        resourceId: newTask.resource_id,
+      },
+    ]);
   }
 
   async function handleAddPerson() {
